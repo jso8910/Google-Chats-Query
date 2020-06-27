@@ -19,36 +19,37 @@ import random
 import binascii
 import os
 
-URL = 'https://news.google.com/search?q=CNN&hl=en-US&gl=US&ceid=US:en'
-page = requests.get(URL)
+def searchGNews(query):
+    URL = 'https://news.google.com/search?q=' + query + '&hl=en-US&gl=US&ceid=US:en'
+    page = requests.get(URL)
 
-newId = str(binascii.b2a_hex(os.urandom(30)))
-newId = newId.strip("b'")
-newId = newId.strip("'")
-filename = str(newId) + '.json'
-data = {}
-data['articles'] = []
+    newId = str(binascii.b2a_hex(os.urandom(30)))
+    newId = newId.strip("b'")
+    newId = newId.strip("'")
+    filename = str(newId) + '.json'
+    data = {}
+    data['articles'] = []
 
-soup = BeautifulSoup(page.text, 'lxml')
-articles = soup.find_all('div', class_='NiLAwe y6IFtc R7GTQ keNKEd j7vNaf nID9nc')
-data['articles'] = []
-for article in articles:
-    # print(title, '\n\n\n\n')
-    title_elem = article.find('h3', class_='ipQwMb ekueJc gEATFF RD0gLb')
-    article_link = article.find('a', class_='DY5T1d')
-    article_snippet = article.find('span', class_='xBbh9')
-    image_url = article.find('img', class_='tvs3Id QwxBBf')
-    publisher = article.find('a', class_='wEwyrc AVN2gc uQIVzc Sksgp')
-    time = article.find('time', class_='WW6dff uQIVzc Sksgp')
+    soup = BeautifulSoup(page.text, 'lxml')
+    articles = soup.find_all('div', class_='NiLAwe y6IFtc R7GTQ keNKEd j7vNaf nID9nc')
+    data['articles'] = []
+    for article in articles:
+        # print(title, '\n\n\n\n')
+        title_elem = article.find('h3', class_='ipQwMb ekueJc gEATFF RD0gLb')
+        article_link = article.find('a', class_='DY5T1d')
+        article_snippet = article.find('span', class_='xBbh9')
+        image_url = article.find('img', class_='tvs3Id QwxBBf')
+        publisher = article.find('a', class_='wEwyrc AVN2gc uQIVzc Sksgp')
+        time = article.find('time', class_='WW6dff uQIVzc Sksgp')
 
-    url = article_link['href'].replace('./', 'https://news.google.com/', 1)
+        url = article_link['href'].replace('./', 'https://news.google.com/', 1)
 
-    data['articles'].append({
-        "source": publisher.text, 
-        "title": title_elem.text, 
-        "articlePreview": article_snippet.text, 
-        "url": url, 
-        "urlToImage": image_url['src'], 
-        "timePublished": time['datetime']})
-with open(filename, "w") as outfile:
-    json.dump(data, outfile)
+        data['articles'].append({
+            "source": publisher.text, 
+            "title": title_elem.text, 
+            "articlePreview": article_snippet.text, 
+            "url": url, 
+            "urlToImage": image_url['src'], 
+            "timePublished": time['datetime']})
+    with open(filename, "w") as outfile:
+        json.dump(data, outfile)
